@@ -16,12 +16,15 @@ import { useState, useEffect } from "react";
 import { Chat } from "@livekit/components-react";
 import { Input } from "@/components/ui/input"
 import { Send } from "lucide-react"
+import { MinimizedTranscript } from "@/components/minimized-transcript"
+
 
 
 interface LiveTranscriptProps {
   onMinimize: () => void
   messages: Message[]
   setMessages: (messages: Message[]) => void
+  isMinimized: boolean
 }
 
 interface Message {
@@ -33,13 +36,13 @@ interface Message {
 const Message = ({ type, text }: { type: string, text: string }) => {
   return <div className="message">
     <strong className={`message-${type}`}>
-      {type === "agent" ? "Agent: " : "You: "}
+      {type === "agent" ? "DocAI: " : "You: "}
     </strong>
     <span className="message-text">{text}</span>
   </div>;
 };
 
-export function LiveTranscript({ onMinimize, messages, setMessages }: LiveTranscriptProps) {
+export function LiveTranscript({ onMinimize, messages, setMessages, isMinimized, setIsMinimized }: LiveTranscriptProps) {
   const { state, audioTrack, agentTranscriptions } = useVoiceAssistant()
   const localParticipant = useLocalParticipant()
   const { segments: userTranscriptions } = useTrackTranscription({
@@ -82,42 +85,46 @@ export function LiveTranscript({ onMinimize, messages, setMessages }: LiveTransc
   }, [agentTranscriptions, userTranscriptions, setMessages])
 
   return (
-    <Card className="h-full border-none shadow-none bg-background/50 backdrop-blur-sm flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 shrink-0">
-        <CardTitle className="text-2xl font-bold">Live Transcript</CardTitle>
-        <Button variant="ghost" size="icon" onClick={onMinimize}>
-          <Minus className="h-4 w-4" />
-        </Button>
-      </CardHeader>
-      <CardContent className="p-0 flex-grow flex flex-col overflow-hidden">
-        <ScrollArea className="flex-grow px-4 mb-4 h-[calc(100%-80px)]">
-          <div className="space-y-4 pb-4">
-            {messages.map((msg, index) => (
-              <Card key={index} className="bg-muted/50">
-                <CardContent className="p-4">
-                  <span className="font-semibold text-primary">{msg.type === "agent" ? "Agent: " : "You: "}</span>
-                  {msg.text}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
-        {/* <div className="p-4 bg-background/50 backdrop-blur-sm shrink-0">
-          <div className="flex space-x-2">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Type your message here..."
-              className="flex-1"
-            />
-            <Button size="icon" className="rounded-full" onClick={handleSend}>
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </div> */}
-      </CardContent>
-    </Card>
+    !isMinimized ? (
+      <Card className="h-full border-none shadow-none bg-background/50 backdrop-blur-sm flex flex-col">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 shrink-0">
+          <CardTitle className="text-2xl font-bold">Live Transcript</CardTitle>
+          <Button variant="ghost" size="icon" onClick={onMinimize}>
+            <Minus className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0 flex-grow flex flex-col overflow-hidden">
+          <ScrollArea className="flex-grow px-4 mb-4 h-[calc(100%-80px)]">
+            <div className="space-y-4 pb-4">
+              {messages.map((msg, index) => (
+                <Card key={index} className="bg-muted/50">
+                  <CardContent className="p-4">
+                    <span className="font-semibold text-primary">{msg.type === "agent" ? "DocAI: " : "You: "}</span>
+                    {msg.text}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
+          {/* <div className="p-4 bg-background/50 backdrop-blur-sm shrink-0">
+            <div className="flex space-x-2">
+              <Input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Type your message here..."
+                className="flex-1"
+              />
+              <Button size="icon" className="rounded-full" onClick={handleSend}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div> */}
+        </CardContent>
+      </Card>
+    ) : (
+      <MinimizedTranscript onMaximize={() => setIsMinimized(false)} />
+    )
   )
 }
 

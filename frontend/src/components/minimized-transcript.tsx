@@ -7,7 +7,7 @@ interface MinimizedTranscriptProps {
 
 export function MinimizedTranscript({ onMaximize }: MinimizedTranscriptProps) {
   return (
-    <div className="fixed bottom-4 right-4">
+    <div className="fixed bottom-4 right-4 z-40">
       <Button variant="secondary" size="icon" className="rounded-full shadow-lg" onClick={onMaximize}>
         <Maximize2 className="h-5 w-5" />
       </Button>
